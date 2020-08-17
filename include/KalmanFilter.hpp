@@ -1,7 +1,6 @@
 //Kalman Filter using the Eigen3 library
 //Developed by Ansu Man Singh
 //Email: ansumsingh@gmail.com
-//Date: 6/4/2017
 
 #ifndef KALMANFILTER_HPP
 #define KALMANFILTER_HPP
@@ -11,17 +10,15 @@
 #include<iostream>
 
 
-namespace kalman {
+namespace Kalman {
 using namespace Eigen;
 
-
-
 template<typename T>
-class kalmanFilter{
+class KalmanFilter{
 typedef Matrix<T,Dynamic,Dynamic> kalmanMatrix;
 public:
     //default constructor
-    kalmanFilter(int states=1,int measurements=1,int inputs=1):
+    KalmanFilter(int states=1,int measurements=1,int inputs=1):
         states(states),
         measurements(measurements),
         inputs(inputs),
@@ -36,7 +33,7 @@ public:
     //
     //Generalized constructor
     template<typename D>
-    kalmanFilter(const kalmanFilter<D> &other):
+    kalmanFilter(const KalmanFilter<D> &other):
         states(other.getNoOfStates()),
         measurements(other.getNoOfMeasurements()),
         inputs(other.getNoOfInputs()),
@@ -52,7 +49,7 @@ public:
 
         }
 
-    kalmanFilter(int states,
+    KalmanFilter(int states,
                   int measurements,
                   int inputs,
                   const kalmanMatrix &A,
@@ -146,7 +143,7 @@ public:
                         }
 
     //For displaying the filter parameters, For Why friend please refer to Scott Mayer
-    friend std::ostream& operator<<(std::ostream& os,const kalmanFilter<T>& filter)
+    friend std::ostream& operator<<(std::ostream& os,const KalmanFilter<T>& filter)
     {
         printFilter(filter);
         return os;
@@ -169,7 +166,7 @@ private:
 
 //For displaying all the parameters of the filter
 template<typename W>
-void printFilter(const kalmanFilter<W> &filter)
+void printFilter(const KalmanFilter<W> &filter)
 {
     std::cout<<std::endl<<"Transitional matrix:"<<std::endl<<filter.getMatrixA();
     std::cout<<std::endl<<"Input matrix:"<<std::endl<<filter.getMatrixB();
