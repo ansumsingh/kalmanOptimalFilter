@@ -80,9 +80,9 @@ public:
 
 
 
-    int  getNoOfStates()const {return states;}
-    int  getNoOfMeasurements()const{return measurements;}
-    int  getNoOfInputs()const{return inputs;}
+    int  numOfStates()const {return states;}
+    int  numOfMeasurements()const{return measurements;}
+    int  numOfInputs()const{return inputs;}
     const kalmanMatrix& getMatrixA()const{return A;}
     const kalmanMatrix& getMatrixB()const {return B;}
     const kalmanMatrix& getMatrixC()const {return C;}
