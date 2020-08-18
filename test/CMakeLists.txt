@@ -1,14 +1,11 @@
-cmake_minimum_required(VERSION 2.7)
+cmake_minimum_required(VERSION 3.0)
 project(KalmanFilterUnittest)
 
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
+find_package(Catch2 CONFIG REQUIRED)
 
-    
-
-include_directories(${Eigen3_INCLUDE_DIRS})
-
-add_executable(kalmanFilter.test kalmanFilter.hpp main.cpp kalmanFilterTest.cpp)
+include_directories(../include)
+add_executable(kalmanFilter.test main.cpp kalmanFilter.Test.cpp)
 
 
-target_link_libraries(kalmanFilter.test PRIVATE Eigen3::Eigen3 Catch2::Catch2)
-
+target_link_libraries(kalmanFilter.test PRIVATE Eigen3::Eigen Catch2::Catch2)

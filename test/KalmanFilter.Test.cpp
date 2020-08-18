@@ -3,14 +3,14 @@
 //Date :6/04/2017
 
 
-#include"kalmanFilter.hpp"
+#include "KalmanFilter.hpp"
+#include "Catch2/catch.hpp"
 
 TEST_CASE("KalmanFilter")
 {
-    auto filter = Kalman::KalmanFilter{}
+    Kalman::KalmanFilter<double> filter{};
 
     REQUIRE(filter.numOfMeasurements() == 1);
     REQUIRE(filter.numOfStates() == 1);
-    REQUIRE(filter.numOfOutputs() == 1);
     REQUIRE(filter.numOfInputs() == 1);
 }
