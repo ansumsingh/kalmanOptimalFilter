@@ -8,7 +8,7 @@
 
 TEST_CASE("KalmanFilter")
 {
-    Kalman::KalmanFilter<double> filter{};
+	auto filter = Kalman::KalmanFilter<double>{};
 
     REQUIRE(filter.numOfMeasurements() == 1);
     REQUIRE(filter.numOfStates() == 1);

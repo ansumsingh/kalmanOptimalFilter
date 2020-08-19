@@ -5,9 +5,9 @@
 #ifndef KALMANFILTER_HPP
 #define KALMANFILTER_HPP
 
-#include<eigen3/Eigen/Dense>
-#include<eigen3/Eigen/Core>
-#include<iostream>
+#include <iostream>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 
 
 namespace Kalman {
@@ -33,7 +33,7 @@ public:
     //
     //Generalized constructor
     template<typename D>
-    kalmanFilter(const KalmanFilter<D> &other):
+    KalmanFilter(const KalmanFilter<D> &other):
         states(other.getNoOfStates()),
         measurements(other.getNoOfMeasurements()),
         inputs(other.getNoOfInputs()),
