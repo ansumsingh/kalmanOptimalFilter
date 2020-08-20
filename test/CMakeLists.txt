@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.0)
+
 project(KalmanFilterUnittest)
 
-
-find_package(Eigen3 Catch2 CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 
-include_directories(../include)
-add_executable(kalmanFilter.test main.cpp kalmanFilter.Test.cpp)
+# get the parent directory
+get_filename_component(PARENT_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
 
-set(UNIT_TEST kalmanFilter.test)
+include_directories(${PARENT_DIR}/include)
+
+add_executable(kalmanFilter_unittests main.cpp kalmanFilter.Test.cpp)
+
+set(UNIT_TEST kalmanFilter_unittests)
+
+target_link_libraries(kalmanFilter_unittests PRIVATE Eigen3::Eigen Catch2::Catch2)
+
+#add the unittests at the end.
 add_custom_command(
      TARGET ${UNIT_TEST}
      COMMENT "Run tests ${UNIT_TEST}"
      POST_BUILD 
      COMMAND ${UNIT_TEST}
 )
-
-target_link_libraries(kalmanFilter.test PRIVATE Eigen3::Eigen Catch2::Catch2)
