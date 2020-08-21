@@ -2,83 +2,77 @@
 //Developed by Ansu Man Singh
 //Email: ansumsingh@gmail.com
 
-#ifndef KALMANFILTER_HPP
-#define KALMANFILTER_HPP
+#pragma once
 
-#include <iostream>
+#include <ostream>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Core>
+#include <type_traits>
+
+
+
 
 namespace Kalman
 {
     using namespace Eigen;
 
-    template <typename T>
+    template <typename T, int numStates, int numInputs, int numMeasurements>
     class KalmanFilter
     {
         typedef Matrix<T, Dynamic, Dynamic> kalmanMatrix;
 
     public:
         //default constructor
-        KalmanFilter(int states = 1, int measurements = 1, int inputs = 1) : states(states),
-                                                                             measurements(measurements),
-                                                                             inputs(inputs),
-                                                                             A(states, states),
-                                                                             B(states, inputs),
-                                                                             C(measurements, states),
-                                                                             Q(states, states),
-                                                                             R(measurements, measurements),
-                                                                             P(states, states),
-                                                                             pre_state(states, 1),
-                                                                             post_state(states, 1){};
+        KalmanFilter() : A(numStates, numStates),
+                         B(numStates, numInputs),
+                         C(numMeasurements, numStates),
+                         Q(numStates, numStates),
+                         R(numMeasurements, numMeasurements),
+                         P(numStates, numStates),
+                         pre_state(numStates, 1),
+                         post_state(numStates, 1)
+                         {};
         //
         //Generalized constructor
-        template <typename D>
-        KalmanFilter(const KalmanFilter<D> &other) : states(other.getNoOfStates()),
-                                                     measurements(other.getNoOfMeasurements()),
-                                                     inputs(other.getNoOfInputs()),
-                                                     A(other.getMatrixA().template cast<T>()),
-                                                     B(other.getMatrixB().template cast<T>()),
-                                                     C(other.getMatrixC().template cast<T>()),
-                                                     Q(other.getMatrixQ().template cast<T>()),
-                                                     R(other.getMatrixR().template cast<T>()),
-                                                     P(other.getMatrixP().template cast<T>()),
-                                                     pre_state(other.getPreState().template cast<T>()),
-                                                     post_state(other.getPostState().template cast<T>())
-        {
-        }
-
-        KalmanFilter(int states,
-                     int measurements,
-                     int inputs,
-                     const kalmanMatrix &A,
+        // At the moment copy constructor is disabled
+        KalmanFilter(const KalmanFilter<T, numStates, numInputs, numMeasurements> &filter) = delete;
+        KalmanFilter& operator= (const KalmanFilter<T, numStates, numInputs, numMeasurements> &filter) = delete;
+        KalmanFilter& operator= (KalmanFilter<T, numStates, numInputs, numMeasurements> &filter) = delete;
+        
+        template <typename D,int i, int j, int k>
+        KalmanFilter(const KalmanFilter<D, i, j, k> &other) = delete;
+        
+        template <typename D,int i, int j, int k>
+        KalmanFilter& operator= (const KalmanFilter<D, i, j, k> &other) = delete;
+        
+        template <typename D,int i, int j, int k>
+        KalmanFilter& operator= (KalmanFilter<D, i, j ,k> &&other) = delete;
+        
+        KalmanFilter(const kalmanMatrix &A,
                      const kalmanMatrix &B,
                      const kalmanMatrix &C,
                      const kalmanMatrix &Q,
                      const kalmanMatrix &R,
-                     const kalmanMatrix &pre_state) : states(states),
-                                                      measurements(measurements),
-                                                      inputs(inputs),
-                                                      A(A),
+                     const kalmanMatrix &pre_state) : A(A),
                                                       B(B),
                                                       C(C),
                                                       Q(Q),
                                                       R(R),
-                                                      P(kalmanMatrix::Identity(states, states)),
+                                                      P(kalmanMatrix::Identity(numStates, numStates)),
                                                       pre_state(pre_state)
         {
-            assert((states > 0) && (measurements > 0) && (inputs > 0) &&
-                   (A.cols() == states) && (A.rows() == states) &&
-                   (B.rows() == states) && (B.cols() == inputs) &&
-                   (C.cols() == states) && (C.rows() == measurements) &&
-                   (Q.rows() == states) && (Q.cols() == states) &&
-                   (R.cols() == measurements) && (R.rows() == measurements) &&
-                   (pre_state.rows() == states) && (pre_state.cols() == 1));
+            static_assert((numOfStates > 0) && (numMeasurements > 0) && (numInputs > 0) &&
+                          (A.cols() == numStates) && (A.rows() == numStates) &&
+                          (B.rows() == numStates) && (B.cols() == numInputs) &&
+                          (C.cols() == numStates) && (C.rows() == numMeasurements) &&
+                          (Q.rows() == numStates) && (Q.cols() == numStates) &&
+                          (R.cols() == numMeasurements) && (R.rows() == numMeasurements) &&
+                          (pre_state.rows() == numStaes) && (pre_state.cols() == 1));
         }
 
-        int numOfStates() const { return states; }
-        int numOfMeasurements() const { return measurements; }
-        int numOfInputs() const { return inputs; }
+        int numOfStates() const { return numStates; }
+        int numOfMeasurements() const { return numMeasurements; }
+        int numOfInputs() const { return numInputs; }
         
         const kalmanMatrix &getMatrixA() const { return A; }
         const kalmanMatrix &getMatrixB() const { return B; }
@@ -153,16 +147,13 @@ namespace Kalman
         }
 
         //For displaying the filter parameters, For Why friend please refer to Scott Mayer
-        friend std::ostream &operator<<(std::ostream &os, const KalmanFilter<T> &filter)
+        friend std::ostream &operator<<(std::ostream &os, const KalmanFilter<T, numStates, numMeasurements, numInputs> &filter)
         {
-            printFilter(filter);
+            printFilter(os, filter);
             return os;
         }
 
     private:
-        int states;
-        int measurements;
-        int inputs;
         kalmanMatrix A;
         kalmanMatrix B;
         kalmanMatrix C;
@@ -174,26 +165,26 @@ namespace Kalman
     };
 
     //For displaying all the parameters of the filter
-    template <typename W>
-    void printFilter(const KalmanFilter<W> &filter)
+    template <typename W, int i, int j, int k>
+    void printFilter(std::ostream &os, const KalmanFilter<W, i, j, k> &filter)
     {
-        std::cout << std::endl
-                  << "Transitional matrix:" << std::endl
-                  << filter.getMatrixA();
-        std::cout << std::endl
-                  << "Input matrix:" << std::endl
-                  << filter.getMatrixB();
-        std::cout << std::endl
-                  << "Measurement matrix:" << std::endl
-                  << filter.getMatrixC();
-        std::cout << std::endl
-                  << "Process noise co-variance matrix:" << std::endl
-                  << filter.getMatrixQ();
-        std::cout << std::endl
-                  << "Measurment noise co-variance matrix:" << std::endl
-                  << filter.getMatrixR();
+        os << std::endl
+           << "Transitional matrix:" << std::endl
+           << filter.getMatrixA();
+        os << std::endl
+           << "Input matrix:" << std::endl
+           << filter.getMatrixB();
+        os << std::endl
+           << "Measurement matrix:" << std::endl
+           << filter.getMatrixC();
+        os << std::endl
+           << "Process noise co-variance matrix:" << std::endl
+           << filter.getMatrixQ();
+        os << std::endl
+           << "Measurment noise co-variance matrix:" << std::endl
+           << filter.getMatrixR();
     }
 
 } // namespace Kalman
 
-#endif
+
