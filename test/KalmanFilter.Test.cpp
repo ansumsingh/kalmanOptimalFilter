@@ -2,10 +2,10 @@
 //Developed by Ansu Man Singh
 //Date :6/04/2017
 
-
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Core>
 #include "KalmanFilter.hpp"
 #include "Catch2/catch.hpp"
-
 
 namespace kalman::unittests{
 TEST_CASE("KalmanFilter::KalmanFilter{}")
@@ -23,4 +23,4 @@ TEST_CASE("KalmanFilter::KalmanFilter{}")
     REQUIRE(filter2.numOfInputs() == 2);
 }
 
-}
+}// namespace kalman::unittests

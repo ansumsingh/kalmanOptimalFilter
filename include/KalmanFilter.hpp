@@ -85,7 +85,7 @@ namespace Kalman
         //set the transitional Matrix;
         void setMatrixA(const kalmanMatrix &A_ip)
         {
-            assert((A.cols() == states) && (A.rows() == states));
+            assert((A.cols() == numStates) && (A.rows() == numStates));
             A = A_ip;
         }
         //set the Input matrix
