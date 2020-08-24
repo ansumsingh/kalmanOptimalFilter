@@ -8,7 +8,7 @@ namespace kalman
     template <class T, size_t ROW_DIM, size_t COL_DIM>
     class KalmanMatrix : public Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>
     {
-    public:
+      public:
         using Base = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
         KalmanMatrix() : Base(ROW_DIM, COL_DIM) {}
         
@@ -19,4 +19,4 @@ namespace kalman
             return *this;
         }
     };
-} // namespace kalman
+}// namespace kalman
