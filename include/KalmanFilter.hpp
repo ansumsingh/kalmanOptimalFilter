@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "KalmanMatrix.hpp"
+#include "KalmanVector.hpp"
 #include <ostream>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Core>
@@ -15,29 +17,32 @@
 namespace Kalman
 {
     using namespace Eigen;
-
-    template <typename T, int numStates, int numInputs, int numMeasurements>
+    template <typename T, size_t STATES_DIM, size_t INPUT_DIM, size_t MEASUREMENT_DIM>
     class KalmanFilter
     {
-        typedef Matrix<T, Dynamic, Dynamic> kalmanMatrix;
 
     public:
+        using kalmanStatesMatrix = kalman::KalmanMatrix<T, STATES_DIM, STATES_DIM>;
+        using kalmanInputMatrix = kalman::KalmanMatrix<T, STATES_DIM, INPUT_DIM>;
+        using kalmanOutputMatrix = kalman::KalmanMatrix<T, MEASUREMENT_DIM, STATES_DIM>;
+        using kalmanMeasurementMatrix = kalman::KalmanMatrix<T, MEASUREMENT_DIM, MEASUREMENT_DIM>;
+        using kalmanMeasurementVector = kalman::KalmanVector<T, MEASUREMENT_DIM>;
+        using kalmanStatesVector = kalman::KalmanVector<T, STATES_DIM>;
         //default constructor
-        KalmanFilter() : A(numStates, numStates),
-                         B(numStates, numInputs),
-                         C(numMeasurements, numStates),
-                         Q(numStates, numStates),
-                         R(numMeasurements, numMeasurements),
-                         P(numStates, numStates),
-                         pre_state(numStates, 1),
-                         post_state(numStates, 1)
+        KalmanFilter() : A{},
+                         B{},
+                         C{},
+                         Q{},
+                         R{},
+                         P{},
+                         pre_state{},
+                         post_state{}
                          {};
         //
         //Generalized constructor
         // At the moment copy constructor is disabled
-        KalmanFilter(const KalmanFilter<T, numStates, numInputs, numMeasurements> &filter) = delete;
-        KalmanFilter& operator= (const KalmanFilter<T, numStates, numInputs, numMeasurements> &filter) = delete;
-        KalmanFilter& operator= (KalmanFilter<T, numStates, numInputs, numMeasurements> &filter) = delete;
+        KalmanFilter(const KalmanFilter<T, STATES_DIM, INPUT_DIM, MEASUREMENT_DIM> &filter) = delete;
+        KalmanFilter& operator= (const KalmanFilter<T, STATES_DIM, INPUT_DIM, MEASUREMENT_DIM> &filter) = delete;
         
         template <typename D,int i, int j, int k>
         KalmanFilter(const KalmanFilter<D, i, j, k> &other) = delete;
@@ -48,88 +53,88 @@ namespace Kalman
         template <typename D,int i, int j, int k>
         KalmanFilter& operator= (KalmanFilter<D, i, j ,k> &&other) = delete;
         
-        KalmanFilter(const kalmanMatrix &A,
-                     const kalmanMatrix &B,
-                     const kalmanMatrix &C,
-                     const kalmanMatrix &Q,
-                     const kalmanMatrix &R,
-                     const kalmanMatrix &pre_state) : A(A),
+        KalmanFilter(const kalmanStatesMatrix &A,
+                     const kalmanInputMatrix &B,
+                     const kalmanOutputMatrix &C,
+                     const kalmanStatesMatrix &Q,
+                     const kalmanMeasurementMatrix &R,
+                     const kalmanStatesVector &pre_state) : A(A),
                                                       B(B),
                                                       C(C),
                                                       Q(Q),
                                                       R(R),
-                                                      P(kalmanMatrix::Identity(numStates, numStates)),
+                                                      P(kalmanMatrix::Identity(STATES_DIM, STATES_DIM)),
                                                       pre_state(pre_state)
         {
-            static_assert((numOfStates > 0) && (numMeasurements > 0) && (numInputs > 0) &&
-                          (A.cols() == numStates) && (A.rows() == numStates) &&
-                          (B.rows() == numStates) && (B.cols() == numInputs) &&
-                          (C.cols() == numStates) && (C.rows() == numMeasurements) &&
-                          (Q.rows() == numStates) && (Q.cols() == numStates) &&
-                          (R.cols() == numMeasurements) && (R.rows() == numMeasurements) &&
-                          (pre_state.rows() == numStaes) && (pre_state.cols() == 1));
+            static_assert((STATES_DIM > 0) && (MEASUREMENT_DIM > 0) && (INPUT_DIM > 0) &&
+                          (A.cols() == STATES_DIM) && (A.rows() == STATES_DIM) &&
+                          (B.rows() == STATES_DIM) && (B.cols() == INPUT_DIM) &&
+                          (C.cols() == STATES_DIM) && (C.rows() == MEASUREMENT_DIM) &&
+                          (Q.rows() == STATES_DIM) && (Q.cols() == STATES_DIM) &&
+                          (R.cols() == MEASUREMENT_DIM) && (R.rows() == MEASUREMENT_DIM) &&
+                          (pre_state.rows() == STATES_DIM) && (pre_state.cols() == 1));
         }
 
-        int numOfStates() const { return numStates; }
-        int numOfMeasurements() const { return numMeasurements; }
-        int numOfInputs() const { return numInputs; }
+        inline int numOfStates() const { return STATES_DIM; }
+        inline int numOfMeasurements() const { return MEASUREMENT_DIM; }
+        inline int numOfInputs() const { return INPUT_DIM; }
         
-        const kalmanMatrix &getMatrixA() const { return A; }
-        const kalmanMatrix &getMatrixB() const { return B; }
-        const kalmanMatrix &getMatrixC() const { return C; }
-        const kalmanMatrix &getMatrixQ() const { return Q; }
-        const kalmanMatrix &getMatrixR() const { return R; }
-        const kalmanMatrix &getMatrixP() const { return P; }
-        const kalmanMatrix &getPreState() const { return pre_state; }
-        const kalmanMatrix &getPostState() const { return post_state; }
+        inline const kalmanStatesMatrix &matrixA() const { return A; }
+        inline const kalmanInputMatrix &matrixB() const { return B; }
+        inline const kalmanOutputMatrix &matrixC() const { return C; }
+        inline const kalmanStatesMatrix &matrixQ() const { return Q; }
+        inline const kalmanMeasurementMatrix &matrixR() const { return R; }
+        inline const kalmanStatesMatrix &matrixP() const { return P; }
+        inline const kalmanStatesVector &preState() const { return pre_state; }
+        inline const kalmanStatesVector &postState() const { return post_state; }
         //set the transitional Matrix;
-        void setMatrixA(const kalmanMatrix &A_ip)
+        void setMatrixA(const kalmanStatesMatrix &A_ip)
         {
-            assert((A.cols() == numStates) && (A.rows() == numStates));
+            assert((A.cols() == STATES_DIM) && (A.rows() == STATES_DIM));
             A = A_ip;
         }
         //set the Input matrix
-        void setMatrixB(const kalmanMatrix &B_ip)
+        void setMatrixB(const kalmanInputMatrix &B_ip)
         {
             assert((B.cols() == inputs) && (A.rows() == states));
             B = B_ip;
         }
         //Set the Output matrix
-        void setMatrixC(const kalmanMatrix &C_ip)
+        void setMatrixC(const kalmanOutputMatrix &C_ip)
         {
             assert((C.cols() == measurements) && (C.rows() == states));
             C = C_ip;
         }
         //Set the process noise covariance
-        void setMatrixQ(const kalmanMatrix &Q_ip)
+        void setMatrixQ(const kalmanStatesMatrix &Q_ip)
         {
             assert((Q.cols() == states) && (Q.rows() == states));
             Q = Q_ip;
         }
         //Set the measurement noise covariance
-        void setMatrixR(const kalmanMatrix &R_ip)
+        void setMatrixR(const kalmanMeasurementMatrix &R_ip)
         {
             assert((R.cols() == measurements) && (Q.rows() == measurements));
             R = R_ip;
         }
         //Set the pre state
-        void setMatrixPreState(const kalmanMatrix &pre_state_ip)
+        void setMatrixPreState(const kalmanStatesVector &pre_state_ip)
         {
             assert((R.cols() == measurements) && (Q.rows() == measurements));
             pre_state = pre_state_ip;
         }
 
         //Predict the value
-        const kalmanMatrix &predict(const kalmanMatrix &input)
+        const kalmanStatesVector &predict(const kalmanStatesVector &input)
         {
             assert(input.rows() == inputs);
-            P = A * P * Transpose<kalmanMatrix>(A) + Q;
+            P = A * P * Transpose<kalmanStatesMatrix>(A) + Q;
             post_state = A * pre_state + B * input;
             pre_state = post_state;
             return post_state;
         }
         //Correction steps
-        const kalmanMatrix &correct(const kalmanMatrix &measurement, const kalmanMatrix &input)
+        const kalmanStatesVector &correct(const kalmanMeasurementVector &measurement, const kalmanStatesVector &input)
         {
             assert(input.rows() == inputs && measurement.rows() == measurements);
 
@@ -147,21 +152,21 @@ namespace Kalman
         }
 
         //For displaying the filter parameters, For Why friend please refer to Scott Mayer
-        friend std::ostream &operator<<(std::ostream &os, const KalmanFilter<T, numStates, numMeasurements, numInputs> &filter)
+        friend std::ostream &operator<<(std::ostream &os, const KalmanFilter<T, STATES_DIM, MEASUREMENT_DIM, INPUT_DIM> &filter)
         {
             printFilter(os, filter);
             return os;
         }
 
     private:
-        kalmanMatrix A;
-        kalmanMatrix B;
-        kalmanMatrix C;
-        kalmanMatrix Q;
-        kalmanMatrix R;
-        kalmanMatrix P;
-        kalmanMatrix pre_state;
-        kalmanMatrix post_state;
+        kalmanStatesMatrix A;
+        kalmanInputMatrix B;
+        kalmanOutputMatrix C;
+        kalmanStatesMatrix Q;
+        kalmanMeasurementMatrix R;
+        kalmanStatesMatrix P;
+        kalmanStatesVector pre_state;
+        kalmanStatesVector post_state;
     };
 
     //For displaying all the parameters of the filter

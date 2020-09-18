@@ -20,18 +20,18 @@ namespace kalman::unittests
 		REQUIRE(matrixB.cols() == 3);
 	}
 
-	TEST_CASE("operator <<")
+	TEST_CASE("KalmanMatrix::KalmanMatrix operator <<")
 	{
 		auto matrixTest = kalman::KalmanMatrix<double, 2, 3>{};
 		auto result = std::vector<double>{ 1, 1, 1, 1, 1, 1 };
 
 		matrixTest << 1, 1, 1, 1, 1, 1;
-		auto vecMatrixTest = std::vector<double>{ matrixTest.data(), (matrixTest.data() + matrixTest.size()) };
+		auto vecMatrixTest = std::vector<double>{matrixTest.data(), (matrixTest.data() + matrixTest.size())};
 
 		REQUIRE(std::equal(result.begin(), result.end(), vecMatrixTest.begin(), vecMatrixTest.end()));
 	}
 
-	TEST_CASE("operator ==")
+	TEST_CASE("KalmanMatrix::KalmanMatrix operator ==")
 	{
 		auto result = GENERATE(
 			std::vector<double>{ 1, 1, 1, 1, 1, 1 },
@@ -52,5 +52,30 @@ namespace kalman::unittests
 		REQUIRE(matrixA == matrixB);
 		REQUIRE(matrixA == matrixC);
 		REQUIRE(matrixC == matrixB);
+	}
+
+	TEST_CASE("KalmanMatrix::KalmanMatrix operator*")
+	{
+		auto matrixA = kalman::KalmanMatrix<double,2,3>{};
+		auto matrixB = kalman::KalmanMatrix<double,3,2>{};
+
+		auto result = std::vector<double>{2, 1, 1, 2};
+
+		matrixA<< 1, 0, 1,
+				  0, 1, 1;
+		
+		matrixB<< 1, 0,
+				  0, 1,
+				  1, 1;
+
+		auto resultMatrix = kalman::KalmanMatrix<double, 2, 3>{};
+		resultMatrix = matrixA*matrixB;
+		
+		REQUIRE(resultMatrix.rows()==2);
+		REQUIRE(resultMatrix.cols()==2);
+		
+		auto resultMatrixVec = std::vector<double>{resultMatrix.data(), (resultMatrix.data() + resultMatrix.size())};
+		REQUIRE(std::equal(result.begin(), result.end(), resultMatrixVec.begin(), resultMatrixVec.end()));
+
 	}
 } // namespace kalman::unittests
