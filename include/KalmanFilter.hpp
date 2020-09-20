@@ -14,7 +14,7 @@
 
 
 
-namespace Kalman
+namespace kalman
 {
     using namespace Eigen;
     template <typename T, size_t STATES_DIM, size_t INPUT_DIM, size_t MEASUREMENT_DIM>
@@ -63,16 +63,12 @@ namespace Kalman
                                                       C(C),
                                                       Q(Q),
                                                       R(R),
-                                                      P(kalmanMatrix::Identity(STATES_DIM, STATES_DIM)),
+                                                      P(Eigen::Matrix<double, STATES_DIM, STATES_DIM>::Identity()),
                                                       pre_state(pre_state)
         {
-            static_assert((STATES_DIM > 0) && (MEASUREMENT_DIM > 0) && (INPUT_DIM > 0) &&
-                          (A.cols() == STATES_DIM) && (A.rows() == STATES_DIM) &&
-                          (B.rows() == STATES_DIM) && (B.cols() == INPUT_DIM) &&
-                          (C.cols() == STATES_DIM) && (C.rows() == MEASUREMENT_DIM) &&
-                          (Q.rows() == STATES_DIM) && (Q.cols() == STATES_DIM) &&
-                          (R.cols() == MEASUREMENT_DIM) && (R.rows() == MEASUREMENT_DIM) &&
-                          (pre_state.rows() == STATES_DIM) && (pre_state.cols() == 1));
+            static_assert(STATES_DIM > 0, "STATES_DIM should be greater than 0");
+            static_assert(MEASUREMENT_DIM > 0, "MEASUREMENT_DIM should be greater than 0");
+            static_assert(INPUT_DIM > 0, "INPUT_DIM should be greater than 0");
         }
 
         inline int numOfStates() const { return STATES_DIM; }
