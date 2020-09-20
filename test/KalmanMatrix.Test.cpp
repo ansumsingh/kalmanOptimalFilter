@@ -10,15 +10,57 @@ namespace kalman::unittests
 	TEST_CASE("KalmanMatrix::KalmanMatrix")
 	{
 		auto matrixA = kalman::KalmanMatrix<double, 2, 3>{};
+		
+		auto matrixA2 = matrixA;
 
-		REQUIRE(matrixA.rows() == 2);
-		REQUIRE(matrixA.cols() == 3);
+		REQUIRE(matrixA == matrixA2);
+						   
 
 		auto matrixB = kalman::KalmanMatrix<double, 3, 3>{};
 
 		REQUIRE(matrixB.rows() == 3);
 		REQUIRE(matrixB.cols() == 3);
+
+		SECTION("KalmanMatrix<Scalar..>(const KalmanMatrix<Scalar..>&)")
+		{
+			kalman::KalmanMatrix<double, 2, 3> matrixA2 = matrixA;
+			
+			REQUIRE(matrixA2.rows() == 2);
+			REQUIRE(matrixA2.cols() == 3);
+		}
+		
+
+		SECTION("KalmanMatrix<Scalar..>(KalmanMatrix<Scalar..>&&")
+		{
+			auto matrixA3 = std::move(matrixA);
+			
+			REQUIRE(matrixA3.rows() == 2);
+			REQUIRE(matrixA3.cols() == 3);
+		}
+
+		SECTION("KalmanMatrix<Scalar..>(const OtherDerived&)")
+		{
+			auto matrixOrig = Eigen::Matrix<double, 3, 3>{};
+			matrixOrig.setIdentity();
+			kalman::KalmanMatrix<double, 3, 3> matrixC = matrixOrig;
+			
+			REQUIRE(matrixC(0, 0) == 1);
+			REQUIRE(matrixC(1, 1) == 1);
+			REQUIRE(matrixC(2, 2) == 1);
+		}
+
+		SECTION("KalmanMatrix<Scalar..>(OtherDerived&&)")
+		{
+			kalman::KalmanMatrix<double, 3, 3> matrixC = Eigen::Matrix<double, 3, 3>::Identity();
+			// kalman::KalmanMatrix<double, 3, 3> matrixC = Eigen::MatrixXd::Identity(3, 3); This fails the compilation cause rows and columns for MatrixXd is not known at compile time 
+			
+			REQUIRE(matrixC(0, 0) == 1);
+			REQUIRE(matrixC(1, 1) == 1);
+			REQUIRE(matrixC(2, 2) == 1);
+		}
 	}
+
+	
 
 	TEST_CASE("KalmanMatrix::KalmanMatrix operator <<")
 	{
